@@ -1,1 +1,57 @@
+(() => {
+  const root = document.documentElement;
+  const themeButtons = document.querySelectorAll(".theme-toggle");
+  const storedTheme = (() => { try { return localStorage.getItem("yd-theme"); } catch (_) { return null; } })();
+  if (storedTheme === "light" || storedTheme === "dark") root.dataset.theme = storedTheme;
 
+  function syncThemeControls() {
+    const light = root.dataset.theme === "light";
+    themeButtons.forEach((button) => {
+      const icon = button.querySelector(".theme-icon");
+      const label = button.querySelector(".theme-label");
+      if (icon) icon.textContent = light ? "☾" : "☼";
+      if (label) label.textContent = light ? "Dark mode" : "Light mode";
+      button.setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
+    });
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute("content", light ? "#f7f7fc" : "#090910");
+  }
+  syncThemeControls();
+  themeButtons.forEach((button) => button.addEventListener("click", () => {
+    root.dataset.theme = root.dataset.theme === "light" ? "dark" : "light";
+    try { localStorage.setItem("yd-theme", root.dataset.theme); } catch (_) {}
+    syncThemeControls();
+  }));
+
+  const menuButton = document.querySelector(".menu-toggle");
+  const nav = document.querySelector(".main-nav");
+  if (menuButton && nav) {
+    menuButton.addEventListener("click", () => {
+      const open = nav.classList.toggle("open");
+      menuButton.setAttribute("aria-expanded", String(open));
+      menuButton.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
+    });
+    nav.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => {
+      nav.classList.remove("open");
+      menuButton.setAttribute("aria-expanded", "false");
+    }));
+    document.addEventListener("click", (event) => {
+      if (!nav.contains(event.target) && !menuButton.contains(event.target)) {
+        nav.classList.remove("open");
+        menuButton.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
+  document.querySelectorAll("[data-year]").forEach((el) => { el.textContent = new Date().getFullYear(); });
+
+  const filters = document.querySelectorAll("[data-filter]");
+  const cards = document.querySelectorAll("[data-category]");
+  filters.forEach((button) => button.addEventListener("click", () => {
+    const selected = button.dataset.filter;
+    filters.forEach((item) => item.classList.toggle("active", item === button));
+    cards.forEach((card) => {
+      card.hidden = selected !== "all" && card.dataset.category !== selected;
+    });
+  }));
+})();
