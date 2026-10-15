@@ -37,3 +37,78 @@ html[data-theme="dark"]{color-scheme:dark;--bg:#090910;--bg2:#0f101b;--surface:#
   .menu-toggle { min-width: 42px; min-height: 42px; display: block; }
   .main-nav { z-index: 34; top: 70px; }
 }
+/* ===== THEME BUTTON ===== */
+
+.theme-toggle {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    font: inherit;
+    background: transparent;
+    color: inherit;
+    z-index: 1001;
+}
+
+/* ===== DARK THEME ===== */
+
+html[data-theme="dark"],
+html[data-theme="dark"] body,
+body[data-theme="dark"] {
+    background-color: #101522;
+    color: #f5f7ff;
+}
+
+html[data-theme="dark"] a,
+html[data-theme="dark"] p,
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3 {
+    color: inherit;
+}
+
+/* ===== MOBILE MENU ===== */
+
+.menu-toggle,
+.nav-toggle,
+.hamburger,
+#menu-toggle,
+#menuToggle {
+    cursor: pointer;
+    position: relative;
+    z-index: 1002;
+}
+
+@media (max-width: 768px) {
+    .main-nav.open,
+    .nav-links.open,
+    .navbar-links.open,
+    #main-nav.open,
+    #nav-links.open {
+        display: flex !important;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        padding: 20px;
+        gap: 18px;
+        background: #ffffff;
+        color: #111827;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    html[data-theme="dark"] .main-nav.open,
+    html[data-theme="dark"] .nav-links.open,
+    html[data-theme="dark"] .navbar-links.open,
+    html[data-theme="dark"] #main-nav.open,
+    html[data-theme="dark"] #nav-links.open {
+        background: #101522;
+        color: #ffffff;
+    }
+}
