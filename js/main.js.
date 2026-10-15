@@ -1,63 +1,71 @@
+(() => {
+  "use strict";
+  const init = () => {
+    const root = document.documentElement;
+    const themeButtons = document.querySelectorAll(".theme-toggle");
+    const menuButton = document.querySelector(".menu-toggle");
+    const nav = document.querySelector(".main-nav");
 
-document.addEventListener("DOMContentLoaded", () => {
-  const root = document.documentElement;
-  const themeButton = document.querySelector(".theme-toggle");
-  const themeLabel = document.querySelector(".theme-label");
-  const themeIcon = document.querySelector(".theme-icon");
-  const menuButton = document.querySelector(".menu-toggle");
-  const nav = document.querySelector(".main-nav");
-
-  // Theme switch
-  function updateThemeButton() {
-    const light = root.dataset.theme === "light";
-
-    if (themeLabel) {
-      themeLabel.textContent = light ? "Dark mode" : "Light mode";
+    // Light mode is the default. Respect a visitor's saved choice when available.
+    try {
+      const saved = localStorage.getItem("yd-theme");
+      root.dataset.theme = saved === "dark" ? "dark" : "light";
+    } catch (_) {
+      if (!root.dataset.theme) root.dataset.theme = "light";
     }
 
-    if (themeIcon) {
-      themeIcon.textContent = light ? "☾" : "☼";
+    const syncTheme = () => {
+      const isLight = root.dataset.theme !== "dark";
+      root.dataset.theme = isLight ? "light" : "dark";
+      themeButtons.forEach(button => {
+        const icon = button.querySelector(".theme-icon");
+        const label = button.querySelector(".theme-label");
+        if (icon) icon.textContent = isLight ? "☾" : "☼";
+        if (label) label.textContent = isLight ? "Dark mode" : "Light mode";
+        button.setAttribute("aria-label", isLight ? "Switch to dark theme" : "Switch to light theme");
+        button.setAttribute("aria-pressed", String(!isLight));
+      });
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", isLight ? "#f7f7fc" : "#090910");
+    };
+    syncTheme();
+    themeButtons.forEach(button => button.addEventListener("click", () => {
+      root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+      try { localStorage.setItem("yd-theme", root.dataset.theme); } catch (_) {}
+      syncTheme();
+    }));
+
+    const closeMenu = () => {
+      if (!nav || !menuButton) return;
+      nav.classList.remove("open");
+      menuButton.setAttribute("aria-expanded", "false");
+      menuButton.setAttribute("aria-label", "Open navigation");
+    };
+    if (menuButton && nav) {
+      menuButton.addEventListener("click", event => {
+        event.stopPropagation();
+        const isOpen = nav.classList.toggle("open");
+        menuButton.setAttribute("aria-expanded", String(isOpen));
+        menuButton.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+      });
+      nav.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMenu));
+      document.addEventListener("click", event => {
+        if (!nav.contains(event.target) && !menuButton.contains(event.target)) closeMenu();
+      });
+      document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenu(); });
+      window.addEventListener("resize", () => { if (window.innerWidth > 760) closeMenu(); });
     }
-  }
 
-  const savedTheme = localStorage.getItem("yd-theme");
-  if (savedTheme === "light" || savedTheme === "dark") {
-    root.dataset.theme = savedTheme;
-  }
+    document.querySelectorAll("[data-year]").forEach(el => { el.textContent = String(new Date().getFullYear()); });
+    const filters = document.querySelectorAll("[data-filter]");
+    const cards = document.querySelectorAll("[data-category]");
+    filters.forEach(button => button.addEventListener("click", () => {
+      const selected = button.dataset.filter;
+      filters.forEach(item => item.classList.toggle("active", item === button));
+      cards.forEach(card => { card.hidden = selected !== "all" && card.dataset.category !== selected; });
+    }));
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+  else init();
+})();
 
-  updateThemeButton();
-
-  themeButton?.addEventListener("click", () => {
-    root.dataset.theme =
-      root.dataset.theme === "light" ? "dark" : "light";
-
-    localStorage.setItem("yd-theme", root.dataset.theme);
-    updateThemeButton();
-  });
-
-  // Mobile navigation
-  function closeMenu() {
-    nav?.classList.remove("open");
-    menuButton?.setAttribute("aria-expanded", "false");
-    menuButton?.setAttribute("aria-label", "Open navigation");
-  }
-
-  menuButton?.addEventListener("click", () => {
-    const isOpen = nav?.classList.toggle("open") ?? false;
-
-    menuButton.setAttribute("aria-expanded", String(isOpen));
-    menuButton.setAttribute(
-      "aria-label",
-      isOpen ? "Close navigation" : "Open navigation"
-    );
-  });
-
-  nav?.querySelectorAll("a").forEach(link => {
-    link.addEventListener("click", closeMenu);
-  });
-
-  // Footer copyright year
-  document.querySelectorAll("[data-year]").forEach(element => {
-    element.textContent = new Date().getFullYear();
-  });
-});
