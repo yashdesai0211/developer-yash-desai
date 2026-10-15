@@ -23,3 +23,17 @@ html[data-theme="dark"]{color-scheme:dark;--bg:#090910;--bg2:#0f101b;--surface:#
 .menu-toggle{cursor:pointer;color:var(--text);position:relative}
 .menu-toggle:focus-visible,.theme-toggle:focus-visible,.main-nav a:focus-visible{outline:3px solid var(--accent2);outline-offset:3px}
 @media(max-width:760px){.site-header{position:sticky;top:0}.main-nav{z-index:30;max-height:calc(100vh - 82px);overflow-y:auto}.menu-toggle{min-width:42px;min-height:42px}.theme-toggle{min-height:42px}}
+
+
+/* Final responsive header controls fix */
+.theme-toggle { position: relative; z-index: 35; flex-shrink: 0; }
+.menu-toggle { position: relative; z-index: 36; cursor: pointer; color: var(--text); }
+@media (max-width: 760px) {
+  .site-header { gap: 8px; }
+  .brand { margin-right: auto; }
+  .theme-toggle { display: inline-flex; align-items: center; justify-content: center; padding: 8px 10px; min-height: 42px; }
+  .theme-toggle .theme-label { display: none; }
+  .theme-toggle .theme-icon { font-size: 20px; line-height: 1; }
+  .menu-toggle { min-width: 42px; min-height: 42px; display: block; }
+  .main-nav { z-index: 34; top: 70px; }
+}
