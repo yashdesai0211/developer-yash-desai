@@ -1,70 +1,84 @@
-(() => {
-  "use strict";
-  const init = () => {
-    const root = document.documentElement;
-    const themeButtons = document.querySelectorAll(".theme-toggle");
-    const menuButton = document.querySelector(".menu-toggle");
-    const nav = document.querySelector(".main-nav");
+document.addEventListener("DOMContentLoaded", function () {
+    // ===== LIGHT / DARK THEME BUTTON =====
+    const themeButton = document.querySelector(
+        ".theme-toggle, #theme-toggle, #themeToggle"
+    );
 
-    // Light is the default unless the visitor previously selected dark.
-    let savedTheme = null;
-    try { savedTheme = localStorage.getItem("yd-theme"); } catch (_) {}
-    root.dataset.theme = savedTheme === "dark" ? "dark" : "light";
+    function applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        document.body.setAttribute("data-theme", theme);
 
-    const updateThemeUI = () => {
-      const isDark = root.dataset.theme === "dark";
-      themeButtons.forEach(button => {
-        const icon = button.querySelector(".theme-icon");
-        const label = button.querySelector(".theme-label");
-        if (icon) icon.textContent = isDark ? "☀" : "☾";
-        if (label) label.textContent = isDark ? "Light mode" : "Dark mode";
-        button.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
-        button.setAttribute("aria-pressed", String(isDark));
-      });
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute("content", isDark ? "#090910" : "#f7f7fc");
-    };
-    updateThemeUI();
-    themeButtons.forEach(button => {
-      button.addEventListener("click", event => {
+        document.documentElement.classList.toggle(
+            "dark-mode", theme === "dark"
+        );
+        document.body.classList.toggle(
+            "dark-mode", theme === "dark"
+        );
+
+        if (themeButton) {
+            themeButton.setAttribute("aria-label",
+                theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            );
+            themeButton.setAttribute("aria-pressed", String(theme === "dark"));
+            themeButton.textContent = theme === "dark" ? "☀️ Light mode" : "🌙 Dark mode";
+        }
+
+        try {
+            localStorage.setItem("yd-theme", theme);
+        } catch (error) {
+            // Theme still works if storage is unavailable.
+        }
+    }
+
+    // Light mode is the default.
+    let savedTheme = "light";
+
+    try {
+        savedTheme = localStorage.getItem("yd-theme") || "light";
+    } catch (error) {}
+
+    applyTheme(savedTheme);
+
+    themeButton?.addEventListener("click", function (event) {
         event.preventDefault();
-        root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
-        try { localStorage.setItem("yd-theme", root.dataset.theme); } catch (_) {}
-        updateThemeUI();
-      });
+
+        const currentTheme =
+            document.documentElement.getAttribute("data-theme") || "light";
+
+        applyTheme(currentTheme === "dark" ? "light" : "dark");
     });
 
-    const closeMenu = () => {
-      if (!nav || !menuButton) return;
-      nav.classList.remove("open");
-      menuButton.setAttribute("aria-expanded", "false");
-      menuButton.setAttribute("aria-label", "Open navigation");
-    };
-    if (menuButton && nav) {
-      menuButton.addEventListener("click", event => {
-        event.preventDefault();
-        event.stopPropagation();
-        const open = !nav.classList.contains("open");
-        nav.classList.toggle("open", open);
-        menuButton.setAttribute("aria-expanded", String(open));
-        menuButton.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
-      });
-      nav.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMenu));
-      document.addEventListener("click", event => {
-        if (!nav.contains(event.target) && !menuButton.contains(event.target)) closeMenu();
-      });
-      document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenu(); });
-      window.addEventListener("resize", () => { if (window.innerWidth > 760) closeMenu(); });
+
+    // ===== MOBILE THREE-LINE MENU =====
+    const menuButton = document.querySelector(
+        ".menu-toggle, .nav-toggle, .hamburger, #menu-toggle, #menuToggle"
+    );
+
+    const navigation = document.querySelector(
+        ".main-nav, .nav-links, .navbar-links, #main-nav, #nav-links"
+    );
+
+    if (menuButton && navigation) {
+        menuButton.setAttribute("type", "button");
+        menuButton.setAttribute("aria-expanded", "false");
+
+        menuButton.addEventListener("click", function (event) {
+            event.preventDefault();
+
+            const isOpen = navigation.classList.toggle("open");
+
+            menuButton.setAttribute("aria-expanded", String(isOpen));
+            menuButton.setAttribute(
+                "aria-label",
+                isOpen ? "Close menu" : "Open menu"
+            );
+        });
+
+        navigation.querySelectorAll("a").forEach(function (link) {
+            link.addEventListener("click", function () {
+                navigation.classList.remove("open");
+                menuButton.setAttribute("aria-expanded", "false");
+            });
+        });
     }
-    document.querySelectorAll("[data-year]").forEach(el => { el.textContent = String(new Date().getFullYear()); });
-    const filters = document.querySelectorAll("[data-filter]");
-    const cards = document.querySelectorAll("[data-category]");
-    filters.forEach(button => button.addEventListener("click", () => {
-      const selected = button.dataset.filter;
-      filters.forEach(item => item.classList.toggle("active", item === button));
-      cards.forEach(card => { card.hidden = selected !== "all" && card.dataset.category !== selected; });
-    }));
-  };
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
-  else init();
-})();
+});
