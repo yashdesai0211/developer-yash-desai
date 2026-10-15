@@ -51,3 +51,7 @@ The homepage featured projects are separate cards in `index.html`; update those 
 - The completed Rushabh portfolio link is included: https://yashdesai0211.github.io/rushabh-the-editor/. Laxmikant Sir Hindi is linked to its published website: https://yashdesai0211.github.io/laxmikant-mishra-website/.
 - The Android game is shown as a project description only; there is no APK download link.
 - Google Fonts are loaded online when available; fallback fonts are included.
+
+
+## GitHub Pages upload
+Upload the complete contents of this ZIP while preserving the folders `assets/`, `css/`, and `js/`. The entry page is `index.html`. The site defaults to light mode, with a working dark-mode toggle. On mobile, use the three-line menu in the top header. Navigation order is Home, About, Services, Projects, Contact.
