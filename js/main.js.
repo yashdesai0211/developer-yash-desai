@@ -6,34 +6,33 @@
     const menuButton = document.querySelector(".menu-toggle");
     const nav = document.querySelector(".main-nav");
 
-    // Light mode is the default. Respect a visitor's saved choice when available.
-    try {
-      const saved = localStorage.getItem("yd-theme");
-      root.dataset.theme = saved === "dark" ? "dark" : "light";
-    } catch (_) {
-      if (!root.dataset.theme) root.dataset.theme = "light";
-    }
+    // Light is the default unless the visitor previously selected dark.
+    let savedTheme = null;
+    try { savedTheme = localStorage.getItem("yd-theme"); } catch (_) {}
+    root.dataset.theme = savedTheme === "dark" ? "dark" : "light";
 
-    const syncTheme = () => {
-      const isLight = root.dataset.theme !== "dark";
-      root.dataset.theme = isLight ? "light" : "dark";
+    const updateThemeUI = () => {
+      const isDark = root.dataset.theme === "dark";
       themeButtons.forEach(button => {
         const icon = button.querySelector(".theme-icon");
         const label = button.querySelector(".theme-label");
-        if (icon) icon.textContent = isLight ? "☾" : "☼";
-        if (label) label.textContent = isLight ? "Dark mode" : "Light mode";
-        button.setAttribute("aria-label", isLight ? "Switch to dark theme" : "Switch to light theme");
-        button.setAttribute("aria-pressed", String(!isLight));
+        if (icon) icon.textContent = isDark ? "☀" : "☾";
+        if (label) label.textContent = isDark ? "Light mode" : "Dark mode";
+        button.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+        button.setAttribute("aria-pressed", String(isDark));
       });
       const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute("content", isLight ? "#f7f7fc" : "#090910");
+      if (meta) meta.setAttribute("content", isDark ? "#090910" : "#f7f7fc");
     };
-    syncTheme();
-    themeButtons.forEach(button => button.addEventListener("click", () => {
-      root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
-      try { localStorage.setItem("yd-theme", root.dataset.theme); } catch (_) {}
-      syncTheme();
-    }));
+    updateThemeUI();
+    themeButtons.forEach(button => {
+      button.addEventListener("click", event => {
+        event.preventDefault();
+        root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+        try { localStorage.setItem("yd-theme", root.dataset.theme); } catch (_) {}
+        updateThemeUI();
+      });
+    });
 
     const closeMenu = () => {
       if (!nav || !menuButton) return;
@@ -43,10 +42,12 @@
     };
     if (menuButton && nav) {
       menuButton.addEventListener("click", event => {
+        event.preventDefault();
         event.stopPropagation();
-        const isOpen = nav.classList.toggle("open");
-        menuButton.setAttribute("aria-expanded", String(isOpen));
-        menuButton.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+        const open = !nav.classList.contains("open");
+        nav.classList.toggle("open", open);
+        menuButton.setAttribute("aria-expanded", String(open));
+        menuButton.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
       });
       nav.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMenu));
       document.addEventListener("click", event => {
@@ -55,7 +56,6 @@
       document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenu(); });
       window.addEventListener("resize", () => { if (window.innerWidth > 760) closeMenu(); });
     }
-
     document.querySelectorAll("[data-year]").forEach(el => { el.textContent = String(new Date().getFullYear()); });
     const filters = document.querySelectorAll("[data-filter]");
     const cards = document.querySelectorAll("[data-category]");
@@ -68,4 +68,3 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
 })();
-
